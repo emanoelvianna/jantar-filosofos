@@ -6,7 +6,7 @@
 
 pthread_mutex_t* ponteiro_mutex_garfos;
 pthread_t* ponteiro_threads_filosofos;
-int numero_filosofos;
+int quantidade_filosofos;
 
 void* funcao_filosofo(void* thread_argument)
 {
