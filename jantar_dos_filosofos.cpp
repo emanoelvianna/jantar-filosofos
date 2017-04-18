@@ -21,6 +21,12 @@ int main(int argc, char* argv[])
     //quantidade de filosofos e passada por parametro no main
 	quantidade_filosofos = atoi(argv[1]);
 	
+	//devem existir pelo menos 2 filosofos, confirmei com o professor!!!
+	if(quantidade_filosofos < 2)
+	{
+		quantidade_filosofos = 2;
+	}
+	
 	//alocando ponteiros
 	ponteiro_mutex_garfos = (pthread_mutex_t*) malloc(quantidade_filosofos * sizeof(pthread_mutex_t));
 	ponteiro_threads_filosofos = (pthread_t*) malloc(quantidade_filosofos * sizeof(pthread_t));	
