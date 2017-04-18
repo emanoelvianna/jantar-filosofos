@@ -18,6 +18,7 @@ void* funcao_filosofo(void* thread_argument)
 
 int main(int argc, char* argv[])
 {
+    //quantidade de filosofos e passada por parametro no main
 	quantidade_filosofos = atoi(argv[1]);
 	
 	//alocando ponteiros
