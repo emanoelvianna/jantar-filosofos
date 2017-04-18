@@ -2,10 +2,19 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/time.h>
 
 pthread_mutex_t* ponteiro_mutex_garfos;
 pthread_t* ponteiro_threads_filosofos;
 int quantidade_filosofos;
+
+double get_time()
+{
+	struct timeval time_value;
+	gettimeofday(&time_value, 0);
+	//retorna o momento atual do programa em segundos
+	return time_value.tv_sec + (time_value.tv_usec / 1e6);
+}
 
 void* funcao_filosofo(void* thread_argument)
 {
@@ -46,6 +55,4 @@ int main(int argc, char* argv[])
 	{
 		pthread_join(ponteiro_threads_filosofos[i], NULL);
 	}
-
-
 }
