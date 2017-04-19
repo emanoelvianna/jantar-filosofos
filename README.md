@@ -7,6 +7,6 @@ Algoritmo para solucionar o problema de concorrência jantar dos filósofos
 <pre>
   <code>
   gcc jantar_dos_filosofos.c -o main -lpthread
-  ./main <quantidade_filosofos/> <quantidade_tempo/>
+  ./main (quantidade_filosofos) (quantidade_tempo)
   </code>
 </pre>
