@@ -20,6 +20,18 @@ void* funcao_filosofo(void* thread_argument)
 {
 	long filosofo_id = (long) thread_argument;
 
+	double tempo_inicial = get_time();
+	double tempo_atual = 0.0;
+	double tempo_decorrido = 0.0;
+
+	while(tempo_decorrido < 10.0)
+	{
+
+		tempo_atual = get_time();
+		tempo_decorrido = tempo_atual - tempo_inicial;
+	}
+
+	printf("filosofo:%ld - tempo:%f\n",filosofo_id,tempo_decorrido);
 
 	pthread_exit(NULL);
 }
