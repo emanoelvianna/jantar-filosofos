@@ -7,12 +7,21 @@
 
 /**
  * comando de compilação:
- * gcc principal.c -o main -lpthread
+ * gcc jantar_dos_filosofos.c -o main -lpthread
  * comando de execução:
  * ./main <quantidade_filosofos> <quantidade_tempo>
  */
 
+typedef struct
+{
+	int filosofo_id;
+	int pensou;
+	int comeu;
+	int nao_conseguiu_pegar_os_garfos;
+} thread_data;
+
 //variáveis globais
+thread_data* dados_dos_filosofos;
 pthread_mutex_t* ponteiro_mutex_garfos;
 pthread_t* ponteiro_threads_filosofos;
 int quantidade_filosofos;
@@ -39,7 +48,9 @@ double get_time()
  */
 void* funcao_filosofo(void* thread_argument)
 {
-	long filosofo_id = (long) thread_argument;
+	thread_data* dados_do_filosofo = (thread_data*)thread_argument;
+
+	int filosofo_id = dados_do_filosofo->filosofo_id;
 
 	double tempo_inicial = get_time();
 	double tempo_atual = 0.0;
@@ -47,6 +58,8 @@ void* funcao_filosofo(void* thread_argument)
 
 	//pensa por 5 segundos
 	pensar(5.0);
+	//contabiliza pensar
+	dados_do_filosofo->pensou = (dados_do_filosofo->pensou) + 1;
 
 	while(tempo_decorrido < quantidade_tempo)
 	{		
@@ -68,6 +81,8 @@ void* funcao_filosofo(void* thread_argument)
 			{
 				//come por 2 microsegundos
 				comer(0.000002);
+				//contabiliza comer
+				dados_do_filosofo->comeu = (dados_do_filosofo->comeu) + 1;
 
 				//solta os dois garfos na mesa
 				pthread_mutex_unlock(&ponteiro_mutex_garfos[garfo_esquerda_id]);
@@ -75,22 +90,33 @@ void* funcao_filosofo(void* thread_argument)
 
 				//pensa por 5 segundos
 				pensar(5.0);
+				//contabiliza pensar
+				dados_do_filosofo->pensou = (dados_do_filosofo->pensou) + 1;
 			}
 			//se o filósofo não conseguiu pegar o garfo da direita
 			else
 			{
 				//solta o garfo da esquerda na mesa
 				pthread_mutex_unlock(&ponteiro_mutex_garfos[garfo_esquerda_id]);
+				//nao_conseguiu_pegar_os_garfos
+				dados_do_filosofo->nao_conseguiu_pegar_os_garfos = (dados_do_filosofo->nao_conseguiu_pegar_os_garfos) + 1;
 
 				//pensa por alguns segundos (entre 0 e 3 segundos)
 				pensar(rand() % 4); 
+				//contabiliza pensar
+				dados_do_filosofo->pensou = (dados_do_filosofo->pensou) + 1;
 			}
 		}
 		//se o filósofo não conseguiu pegar o garfo da esquerda
 		else
 		{
+			//nao_conseguiu_pegar_os_garfos
+			dados_do_filosofo->nao_conseguiu_pegar_os_garfos = (dados_do_filosofo->nao_conseguiu_pegar_os_garfos) + 1;
+
 			//pensa por alguns segundos (entre 0 e 3 segundos)
-			pensar(rand() % 4); 
+			pensar(rand() % 4);
+			//contabiliza pensar
+			dados_do_filosofo->pensou = (dados_do_filosofo->pensou) + 1; 
 		}
 
 		//contabiliza tempo atual
@@ -98,7 +124,7 @@ void* funcao_filosofo(void* thread_argument)
 		tempo_decorrido = tempo_atual - tempo_inicial;
 	}
 
-	printf("filosofo:%ld - tempo:%f\n",filosofo_id,tempo_decorrido);
+	//printf("filosofo:%d - tempo:%f\n",filosofo_id,tempo_decorrido);
 
 	pthread_exit(NULL);
 }
@@ -134,6 +160,7 @@ int main(int argc, char* argv[])
 	}
 
 	//alocação dinâmica de memória
+	dados_dos_filosofos = (thread_data *) malloc(quantidade_filosofos * sizeof(thread_data));
 	ponteiro_mutex_garfos = (pthread_mutex_t*) malloc(quantidade_filosofos * sizeof(pthread_mutex_t));
 	ponteiro_threads_filosofos = (pthread_t*) malloc(quantidade_filosofos * sizeof(pthread_t));
 
@@ -144,14 +171,28 @@ int main(int argc, char* argv[])
 	}
 
 	//cria threads
-	for(long i = 0; i < quantidade_filosofos; i++)
-	{		
-		pthread_create(&ponteiro_threads_filosofos[i], NULL, funcao_filosofo, (void*)i);
+	for(int i = 0; i < quantidade_filosofos; i++)
+	{	
+		dados_dos_filosofos[i].filosofo_id = i;
+		dados_dos_filosofos[i].pensou = 0;
+		dados_dos_filosofos[i].comeu = 0;
+		dados_dos_filosofos[i].nao_conseguiu_pegar_os_garfos = 0;
+
+		pthread_create(&ponteiro_threads_filosofos[i], NULL, funcao_filosofo, (void*)&dados_dos_filosofos[i]);
 	}
 
 	//aguarda o encerramento de todas as threads
 	for(int i = 0; i < quantidade_filosofos; i++)
 	{
 		pthread_join(ponteiro_threads_filosofos[i], NULL);
+	}
+
+	//imprime relatório
+	for(int i = 0; i < quantidade_filosofos; i++)
+	{	
+		printf("FILOSOFO %d:\n", dados_dos_filosofos[i].filosofo_id = i);
+		printf("pensou %d vezes\n", dados_dos_filosofos[i].pensou);
+		printf("comeu %d vezes\n", dados_dos_filosofos[i].comeu);
+		printf("não conseguiu pegar os garfos %d vezes\n\n", dados_dos_filosofos[i].nao_conseguiu_pegar_os_garfos);
 	}
 }
