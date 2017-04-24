@@ -1,81 +1,95 @@
-/*
- * shm-client - client program to demonstrate shared memory.
- */
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <semaphore.h>
+#include <pthread.h>
 
-#define SHMSZ     27
+#define SHMSZ 27
 
 /**
  * comando de compilação:
- * gcc cliente.c -o cliente
+ * gcc cliente.c -o cliente -lpthread
  * comando de execução:
  * ./cliente <mensagem_string>
- *
- * exemplo:
- * ./cliente "Don't ask what your country can do for you, but what you can do for your country."
+ * exemplo de comando de execução:
+ * ./cliente "Hello. How are you?"
  */
-
 int main(int argc, char* argv[])
 {
-	char* mensagem = argv[1];	
-	//printf("string:%s\n\n",mensagem);
+	//variáveis
+	key_t sem_cliente_mensagem_key;
+	key_t sem_servidor_mensagem_key;
+	key_t mensagem_key;
+	int sem_cliente_id;
+	int sem_servidor_id;
+	int mensagem_id;	
+	sem_t* sem_cliente = (sem_t*) malloc (sizeof(sem_t));
+	sem_t* sem_servidor = (sem_t*) malloc (sizeof(sem_t));
+	char* mensagem;
+	char* mensagem_aux;
+	int numero_de_mensagens_lidas = 0;
+	int max_buffer = 200;
+	int i = 0;
+	int valor_cliente, valor_servidor = -1;
 
-	
+	//efetua leitura do parâmetro do main
+	mensagem_aux = argv[1];
 
-	int shmid;
-	key_t key;
-	char *shm, *s;
+	//nomes dos segmentos de memória compartilhada
+	mensagem_key = 5678;
+	sem_cliente_mensagem_key = 5679;
+	sem_servidor_mensagem_key = 5680;
 
-	/*
-	 * We need to get the segment named
-	 * "5678", created by the server.
-	 */
-	key = 5678;
-
-	/*
-	 * Locate the segment.
-	 */
-	if ((shmid = shmget(key, SHMSZ, 0666)) < 0) {
+	//localiza os segmentos de memória compartilhada
+	if((mensagem_id = shmget(mensagem_key, SHMSZ, IPC_CREAT | 0666)) < 0) 
+	{
 		perror("shmget");
 		exit(1);
 	}
+	if((sem_cliente_id = shmget(sem_cliente_mensagem_key, sizeof(sem_t), IPC_CREAT | 0666)) < 0)
+	{
+    		perror("shmget - semáforo cliente");
+    		exit(1);
+	} 
+	if((sem_servidor_id = shmget(sem_servidor_mensagem_key, sizeof(sem_t*), IPC_CREAT | 0666)) < 0)
+	{
+    		perror("shmget - semáforo servidor");
+    		exit(1);
+	}
 
-	/*
-	 * Now we attach the segment to our data space.
-	 */
-	if ((shm = shmat(shmid, NULL, 0)) == (char *) -1) {
+	//anexa os segmentos de memória para o uso neste processo
+	if((mensagem = shmat(mensagem_id, NULL, 0)) == (char *) -1) 
+	{
 		perror("shmat");
 		exit(1);
 	}
-
-	/*
-	 * Now read what the server put in the memory.
-	 */
-	//for (s = shm; *s != NULL; s++)
-	//	putchar(*s);
-	//putchar('\n');
-
-	/*
-	 * Finally, change the first character of the 
-	 * segment to '*', indicating we have read 
-	 * the segment.
-	 */
-
-
-	*shm = '*';
-	shm++;
-
-	while(*mensagem != '\0')
+	if((sem_cliente = (sem_t*) shmat(sem_cliente_id, NULL, 0)) < 0) 
 	{
-		*shm = *mensagem;
-		shm++;
+		perror("shmat - semáforo do cliente");
+		exit(1);
+	}
+	if((sem_servidor = (sem_t*) shmat(sem_servidor_id, NULL, 0)) < 0) 		
+	{
+		perror("shmat - semáforo do servidor");
+		exit(1);
+	}	
+
+	//espera sinal
+	sem_wait(&(*sem_cliente));	
+	
+	//copia mensagem para o segmento de memória compartilhada
+	while(*mensagem_aux != '\0')
+	{
+		*mensagem = *mensagem_aux;
+		mensagem_aux++;
 		mensagem++;
 	}
+
+	//envia sinal
+	sem_post(&(*sem_servidor));
 
 	exit(0);
 }
