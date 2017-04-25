@@ -26,8 +26,8 @@ int main(int argc, char* argv[])
 	int sem_cliente_id;
 	int sem_servidor_id;
 	int mensagem_id;	
-	sem_t* sem_cliente = (sem_t*) malloc (sizeof(sem_t));
-	sem_t* sem_servidor = (sem_t*) malloc (sizeof(sem_t));
+	sem_t* sem_cliente;
+	sem_t* sem_servidor;
 	char* mensagem;
 	char* mensagem_aux;
 	int numero_de_mensagens_lidas = 0;
@@ -51,13 +51,13 @@ int main(int argc, char* argv[])
 	}
 	if((sem_cliente_id = shmget(sem_cliente_mensagem_key, sizeof(sem_t), IPC_CREAT | 0666)) < 0)
 	{
-    		perror("shmget - semáforo cliente");
-    		exit(1);
+		perror("shmget - semáforo cliente");
+		exit(1);
 	} 
 	if((sem_servidor_id = shmget(sem_servidor_mensagem_key, sizeof(sem_t*), IPC_CREAT | 0666)) < 0)
 	{
-    		perror("shmget - semáforo servidor");
-    		exit(1);
+		perror("shmget - semáforo servidor");
+		exit(1);
 	}
 
 	//anexa os segmentos de memória para o uso neste processo
@@ -79,7 +79,7 @@ int main(int argc, char* argv[])
 
 	//espera sinal
 	sem_wait(&(*sem_cliente));	
-	
+
 	//copia mensagem para o segmento de memória compartilhada
 	while(*mensagem_aux != '\0')
 	{
