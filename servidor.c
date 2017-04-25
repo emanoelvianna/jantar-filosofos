@@ -25,8 +25,8 @@ int main()
 	int sem_cliente_id;
 	int sem_servidor_id;
 	int mensagem_id;	
-	sem_t* sem_cliente = (sem_t*) malloc (sizeof(sem_t));
-	sem_t* sem_servidor = (sem_t*) malloc (sizeof(sem_t));
+	sem_t* sem_cliente;
+	sem_t* sem_servidor;
 	char* mensagem;
 	char* mensagem_aux;
 	int numero_de_mensagens_lidas = 0;
