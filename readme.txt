@@ -1,7 +1,11 @@
+##  jantar dos filósofos: 
+
 comando de compilação:
 gcc jantar_dos_filosofos.c -o main -lpthread
 comando de execução:
 ./main <quantidade_filosofos> <quantidade_tempo>
+
+##  cliente e servidor: 
 
 comando de compilação:
 gcc servidor.c -o servidor -lpthread
