@@ -10,9 +10,9 @@ gcc jantar_dos_filosofos.c -o main -lpthread
 
 ./main <quantidade_filosofos> <quantidade_tempo>
 
-### cliente e servidor: 
+### cliente e servidor : 
 
-- comando de compilação:
+- comando de compilação servidor:
 
 gcc servidor.c -o servidor -lpthread
 
@@ -20,7 +20,7 @@ gcc servidor.c -o servidor -lpthread
 
 ./servidor
 
-- comando de compilação:
+- comando de compilação cliente:
 
 gcc cliente.c -o cliente -lpthread
 
